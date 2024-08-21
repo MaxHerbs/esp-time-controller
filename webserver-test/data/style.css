@@ -1,0 +1,21 @@
+/* body{
+    color: white;
+} */
+
+.container{
+    margin: auto;
+    padding: 10px;
+    text-align: center;
+    /* background-color: lightgray; */
+    width: 50%;
+}
+
+
+.header {
+    font-size: 2rem;
+}
+
+
+.time_input{
+  width: 10%;
+}
