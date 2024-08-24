@@ -23,7 +23,7 @@ bool configure() {
     Serial.println("Failed to start AP");
   }
 
-  // Define routes
+  // Define routes -Static
   server.on("/", HTTP_GET, [](AsyncWebServerRequest* request) {
     Serial.println("Routing on /");
     request->send(SPIFFS, "/index.html", "text/html");
@@ -39,6 +39,10 @@ bool configure() {
     request->send(SPIFFS, "/style.css", "text/css");
   });
 
+
+
+  //Routes relating to wifi
+  //TODO - DUAL MODE WIFI; try connect to input wifi credentials to verify before storing
   server.on("/set_wifi_credentials", HTTP_GET, [](AsyncWebServerRequest* request) {
     Serial.println("Routing on set_wifi_credentials");
     if (!(request->hasParam("ssid") && request->hasParam("password"))) {
@@ -58,6 +62,8 @@ bool configure() {
     request->send(200, "text/plain", credentials);
   });
 
+
+  //Routes relating to the timezone
   server.on("/set_timezone_details", HTTP_GET, [](AsyncWebServerRequest* request) {
     Serial.println("Routing on set_timezone_details");
 

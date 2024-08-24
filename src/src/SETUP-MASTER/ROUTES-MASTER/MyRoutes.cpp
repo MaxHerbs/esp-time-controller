@@ -3,6 +3,8 @@
 #include <Arduino.h>
 #include "SPIFFS.h"
 
+// TODO - Dual band; verify credentials before storing
+// Optional force-store even if wifi cannot be found
 bool set_wifi_credentials(String ssid, String password)
 {
     File input_file = SPIFFS.open("/credentials.txt", "r");
@@ -19,11 +21,11 @@ bool set_wifi_credentials(String ssid, String password)
     StaticJsonDocument<512> doc;
     Serial.println("Deserialising json to replace wifi credentials...");
     DeserializationError error = deserializeJson(doc, text);
-    if (error) 
+    if (error)
     {
         Serial.print("deserializeJson() failed #102: ");
-    	Serial.println(error.f_str());
-    	return false;
+        Serial.println(error.f_str());
+        return false;
     }
 
     doc["wifi"]["ssid"] = ssid;
@@ -66,12 +68,14 @@ String get_wifi_credentials()
 
     StaticJsonDocument<512> doc;
     DeserializationError error = deserializeJson(doc, text);
-    if (error) 
+    if (error)
     {
         Serial.print("deserializeJson() failed #202: ");
-    	Serial.println(error.f_str());
-    	return "error";
+        Serial.println(error.f_str());
+        return "error";
     }
+
+    // TODO - Add redundancy if key is not present
     return doc["wifi"];
 }
 //
@@ -95,17 +99,13 @@ bool set_timezone_details(int hours, int minutes)
     String text = input_file.readString();
     input_file.close();
 
-
-    
-
-
     StaticJsonDocument<512> doc;
     DeserializationError error = deserializeJson(doc, text);
-    if (error) 
+    if (error)
     {
         Serial.print(F("deserializeJson() failed #302: "));
-    	Serial.println(error.f_str());
-    	return false;
+        Serial.println(error.f_str());
+        return false;
     }
     Serial.println("Deserialising json to replace wifi credentials...");
     doc["timezone"]["hours"] = hours;
@@ -147,12 +147,13 @@ String get_timezone_details()
 
     StaticJsonDocument<512> doc;
     DeserializationError error = deserializeJson(doc, text);
-    if (error) 
+    if (error)
     {
         Serial.print("deserializeJson() failed #402: ");
-    	Serial.println(error.f_str());
-    	return "error";
+        Serial.println(error.f_str());
+        return "error";
     }
 
+    // TODO - Add redundancy if key is not present
     return doc["timezone"];
 }
