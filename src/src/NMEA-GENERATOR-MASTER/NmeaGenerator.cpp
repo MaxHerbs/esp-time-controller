@@ -1,55 +1,20 @@
 #include <WiFi.h>
 #include <WiFiUdp.h>
 #include <NTPClient.h>
-#include <HardwareSerial.h>
 
 
 
-HardwareSerial output_serial(1);
 
-const char* ssid = "WLANAP-Z";
-const char* password = "arianwenmax";
+String getFormattedTime(NTPClient timeClient);
+String getDateStr(unsigned long epochTime, NTPClient timeClient);
 
-// NTP Server details
-const char* ntpServer = "pool.ntp.org";
-long gmtOffset_sec;
-const int daylightOffset_sec = 0;
-
-WiFiUDP udp;
-NTPClient timeClient(udp, ntpServer, 0, 60000);  // Initial offset is 0, will be set later
-
-void setup() {
-  Serial.begin(115200);
-  output_serial.begin(9600);
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
-    Serial.print(".");
-  }
-  Serial.println("Connected to Wi-Fi");
-
-
-  gmtOffset_sec = 3600;
-
-
-  timeClient.setTimeOffset(gmtOffset_sec);
-  timeClient.begin();
-}
-
-void loop() {
-
-  String nmea = generate_nmea();
-  Serial.println(nmea);
-  output_serial.println(nmea);
-  delay(10000);  // Update every 10 seconds
-}
 
 String generate_nmea(NTPClient timeClient) {
-  timeClient.update();  // Ensure timeClient is updated
+  timeClient.update(); 
 
 
-  String time = getFormattedTime();
-  String date = getDateStr(timeClient.getEpochTime());
+  String time = getFormattedTime(timeClient);
+  String date = getDateStr(timeClient.getEpochTime(), timeClient);
 
   String prefix = "$GNRMC,";
   String second_part = ".00,4717.1006,N,00147.3434,W,000.0,000.0,";
@@ -58,14 +23,12 @@ String generate_nmea(NTPClient timeClient) {
   String nmea = prefix + time + second_part + date + final_part;
 
 
-
-
   return nmea;
 }
 
 
 
-String getFormattedTime() {
+String getFormattedTime(NTPClient timeClient) {
   int hours = timeClient.getHours();
   int minutes = timeClient.getMinutes();
   int seconds = timeClient.getSeconds();
@@ -80,7 +43,7 @@ String getFormattedTime() {
   return formattedTime;
 }
 
-String getDateStr(unsigned long epochTime) {
+String getDateStr(unsigned long epochTime, NTPClient timeClient) {
   struct tm* timeinfo;
   timeinfo = localtime((time_t*)&epochTime);
 
