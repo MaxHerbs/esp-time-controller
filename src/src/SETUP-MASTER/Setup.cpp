@@ -117,7 +117,11 @@ bool configure()
     Serial.println("Routing on get_timezone_details");
     String credentials = get_timezone_details();
     request->send(200, "text/plain", credentials); });
-
+  //
+  //
+  //
+  //
+  //
   // General
   server.on("/reboot", HTTP_GET, [](AsyncWebServerRequest *request)
             {
@@ -125,6 +129,15 @@ bool configure()
 
     request->send(200, "text/plain", "Rebooting");
     ESP.restart(); });
+
+  server.on("/restore_config_file", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+    Serial.println("Routing on restore_config_file");
+    bool success = restore_config_file();
+
+    String response = success ? "Success": "Failure";
+    
+    request->send(200, "text/plain", response); });
 
   server.begin();
   Serial.println("Setup finished");

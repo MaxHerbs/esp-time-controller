@@ -2,8 +2,8 @@
 #include <ESPAsyncWebServer.h>
 #include <SPIFFS.h>
 #include <FS.h>
-#include "src/SETUP-MASTER/Setup.h" //SRC is badly named but neccessary for recursive compilation
-#include "src/SETUP-MASTER/ROUTES-MASTER/MyRoutes.h" //of the functions within each folder
+#include "src/SETUP-MASTER/Setup.h" //SRC is a bad folder namebut neccessary for recursive compilation of the functions within each folder
+#include "src/SETUP-MASTER/ROUTES-MASTER/MyRoutes.h" 
 #include "src/NMEA-GENERATOR-MASTER/NmeaGenerator.h"
 #include <Arduino.h>
 #include <ArduinoJson.h>
@@ -53,7 +53,7 @@ void loop()
 {
   if (run_setup)
   {
-    
+    //Keep looping
   }
   else
   {

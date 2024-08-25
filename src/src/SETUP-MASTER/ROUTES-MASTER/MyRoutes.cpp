@@ -185,3 +185,36 @@ String get_timezone_details()
     // TODO - Add redundancy if key is not present
     return doc["timezone"];
 }
+
+
+bool restore_config_file() {
+    // Open file for writing
+    File restore_file = SPIFFS.open("/credentials.txt", FILE_WRITE);
+    
+    if (!restore_file) {
+        Serial.println("Failed to open credentials for writing #501");
+        return false;
+    }
+
+    // Create a JSON document
+    StaticJsonDocument<512> doc;
+    doc["wifi"]["ssid"] = "temp";
+    doc["wifi"]["password"] = "temp";
+    doc["timezone"]["hours"] = 1;
+    doc["timezone"]["minutes"] = 30;
+
+    // Serialize JSON to string
+    String jsonString;
+    serializeJson(doc, jsonString);
+
+    // Write JSON string to file
+    if (restore_file.print(jsonString)) {
+        Serial.println("Configuration file restored successfully.");
+        restore_file.close();
+        return true;
+    } else {
+        Serial.println("Failed to write configuration to file.");
+        restore_file.close();
+        return false;
+    }
+}
