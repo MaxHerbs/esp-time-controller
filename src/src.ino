@@ -53,7 +53,7 @@ void loop()
 {
   if (run_setup)
   {
-    Serial.println("In setup loop");
+    
   }
   else
   {

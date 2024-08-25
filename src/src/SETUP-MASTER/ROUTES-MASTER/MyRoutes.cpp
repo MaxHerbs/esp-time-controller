@@ -2,6 +2,9 @@
 #include <ArduinoJson.h>
 #include <Arduino.h>
 #include "SPIFFS.h"
+#include <WiFi.h>
+#include "esp_system.h"
+#include "esp_task_wdt.h"
 
 // TODO - Dual band; verify credentials before storing
 // Optional force-store even if wifi cannot be found
@@ -78,6 +81,31 @@ String get_wifi_credentials()
     // TODO - Add redundancy if key is not present
     return doc["wifi"];
 }
+
+bool verify_wifi_credentials(String ssid, String password)
+{
+
+    unsigned long startAttemptTime = millis();
+    const unsigned long timeout = 10000;
+    Serial.print("Trying to verify wifi...");
+    WiFi.begin(ssid.c_str(), password.c_str());
+    while (WiFi.status() != WL_CONNECTED)
+    {
+        Serial.print(".");
+        if (millis() - startAttemptTime >= timeout)
+        {
+            Serial.println("Failed");
+            return false;
+        }
+        delay(10);
+        yield();
+        esp_task_wdt_reset();
+    }
+
+    Serial.println("Success");
+    return true;
+}
+
 //
 //
 //

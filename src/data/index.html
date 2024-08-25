@@ -20,7 +20,8 @@
         <h2>WiFi Credentials</h2>
         <input placeholder="WiFi name" type="text" id="ssid_input"><br>
         <input placeholder="Password" type="text" id="password_input"><br>
-        <input type="submit" id="updateWifi" onclick="update_wifi()">
+        <input type="submit" id="verifyWifi" onclick="verify_wifi()" value="Verify">
+        <input type="submit" id="updateWifi" onclick="update_wifi()" value="Submit">
         <h4 id="wifiResponse"></h4>
 
         <br>
@@ -75,6 +76,10 @@
 
 
     </div>
+    <div class="container">
+        <input type="submit" id="reboot" onclick="reboot()" value="Reboot">
+    </div>
+
 
     <script src="script.js"></script>
 </body>
