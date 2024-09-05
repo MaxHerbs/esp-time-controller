@@ -3,8 +3,10 @@
 
 #include <Arduino.h>  
 #include "ROUTES-MASTER/MyRoutes.h"
+#include <DNSServer.h>
 
-bool configure();
+
+bool configure(DNSServer& dnsServer);
 
 
 #endif

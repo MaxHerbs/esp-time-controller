@@ -3,17 +3,18 @@
 #include <SPIFFS.h>
 #include <FS.h>
 #include "src/SETUP-MASTER/Setup.h" //SRC is a bad folder namebut neccessary for recursive compilation of the functions within each folder
-#include "src/SETUP-MASTER/ROUTES-MASTER/MyRoutes.h" 
+#include "src/SETUP-MASTER/ROUTES-MASTER/MyRoutes.h"
 #include "src/NMEA-GENERATOR-MASTER/NmeaGenerator.h"
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <WiFiUdp.h>
 #include <NTPClient.h>
 #include <ezTime.h>
+#include <DNSServer.h>
 
 
 Timezone timeClient;
-
+DNSServer dnsServer;
 
 //TODO - Decide on real pin
 int button_pin = 39; //TBC - Correct for esp32 ATOM LITE
@@ -38,7 +39,9 @@ void setup()
   if (run_setup)
   {
     Serial.println("Running setup...");
-    bool success = configure(); // External function. Contains all HTTP routes and starts access point
+    bool success = configure(dnsServer); // External function. Contains all HTTP routes and starts access point
+   
+
   }
   else
   {
@@ -53,7 +56,7 @@ void loop()
 {
   if (run_setup)
   {
-    //Keep looping
+    dnsServer.processNextRequest();
   }
   else
   {
@@ -66,6 +69,7 @@ void loop()
 
     if (millis() - last_millis > update_interval) //Only post message every 10 seconds
     {
+      events();
       last_millis = millis();
       String nmea_time_str = generate_nmea(timeClient);
       Serial.println(nmea_time_str);
@@ -132,15 +136,17 @@ bool configure_time_client()
   String city = doc["city"];
 
 
-  Serial.print("Configuring timezone with continent: ");
-  Serial.print(continent);
-  Serial.print(" and city: ");
-  Serial.println(city);
+  Serial.print("Configuring timezone for " + city + ", " + continent);
 
   String location_str = continent + "/" + city;
   timeClient.setLocation(location_str);
   waitForSync();
   Serial.println("Local time: " + timeClient.dateTime());
+  Serial.println("POSIX: " + timeClient.getPosix());
+  Serial.print("Currently daylight saving? ");
+  String dst = timeClient.isDST() ? "Yes" : "No";
+  Serial.println(dst);
+
 
   return true;
 }

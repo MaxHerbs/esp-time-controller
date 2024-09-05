@@ -5,27 +5,57 @@
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
 #include <FS.h>
-
+#include <DNSServer.h>
 
 AsyncWebServer server(80);
-IPAddress local_IP(192, 168, 0, 1);
-IPAddress gateway(192, 168, 0, 1);
-IPAddress subnet(255, 255, 255, 0);
 
-const char *ssid = "ESP-AP";
+const char *ssid = "ESP-ACCESS-POINT";
 const char *password = "Password123!";
 
-bool configure()
+// Taken from https://iotespresso.com/create-captive-portal-using-esp32/
+class CaptiveRequestHandler : public AsyncWebHandler
 {
-  if (!WiFi.softAPConfig(local_IP, gateway, subnet))
+public:
+  CaptiveRequestHandler() {}
+  virtual ~CaptiveRequestHandler() {}
+
+  bool canHandle(AsyncWebServerRequest *request)
   {
-    Serial.println("Failed to configure AP");
+    return true;
   }
+
+  void handleRequest(AsyncWebServerRequest *request)
+  {
+    Serial.println("Handling request");
+    request->send(SPIFFS, "/index.html", "text/html");
+  }
+};
+
+bool configure(DNSServer& dnsServer)
+{
+  // if (!WiFi.softAPConfig(local_IP, gateway, subnet))
+  // {
+  //   Serial.println("Failed to configure AP");
+  // }
 
   if (!WiFi.softAP(ssid, password))
   {
     Serial.println("Failed to start AP");
   }
+
+
+    // DNS server for captive portal
+    Serial.println("Starting dns");
+    if (dnsServer.start(53, "*", WiFi.softAPIP()))
+    {
+      Serial.println("DNS server started successfully");
+    }
+    else
+    {
+      Serial.println("Failed to start DNS server");
+    }
+
+
 
   // Define routes -Static
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
@@ -42,6 +72,12 @@ bool configure()
             {
     Serial.println("Routing on /style.css");
     request->send(SPIFFS, "/style.css", "text/css"); });
+    
+  server.onNotFound([](AsyncWebServerRequest *request){
+    // Redirect to captive portal page
+    request->redirect("/");
+  });
+
   //
   //
   //
@@ -111,8 +147,6 @@ bool configure()
     String response = success ? "Success" : "Failure";
     request->send(200, "text/plain", response); });
 
-
-
   server.on("/get_timezone_details", HTTP_GET, [](AsyncWebServerRequest *request)
             {
     Serial.println("Routing on get_timezone_details");
@@ -139,6 +173,7 @@ bool configure()
     String response = success ? "Success": "Failure";
     
     request->send(200, "text/plain", response); });
+
 
   server.begin();
   Serial.println("Setup finished");
