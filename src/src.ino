@@ -9,11 +9,11 @@
 #include <ArduinoJson.h>
 #include <WiFiUdp.h>
 #include <NTPClient.h>
+#include <ezTime.h>
 
-const char *ntpServer = "pool.ntp.org";
-int gmt_offset = 3600;
-WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, ntpServer, gmt_offset, 5 * 60000); //Update interval is set to 5 minutes
+
+Timezone timeClient;
+
 
 //TODO - Decide on real pin
 int button_pin = 39; //TBC - Correct for esp32 ATOM LITE
@@ -128,19 +128,19 @@ bool configure_time_client()
 
 
   //TODO - Add redundancy/checking to ensure type and existance of both keys.
-  int hours_offset = doc["hours"].as<int>();
-  int minutes_offset = doc["minutes"].as<int>();
+  String continent = doc["continent"];
+  String city = doc["city"];
 
-  Serial.print("Configuring timezone with hours offset: ");
-  Serial.print(hours_offset);
-  Serial.print(" and minutes offset: ");
-  Serial.println(minutes_offset);
 
-  gmt_offset = hours_offset * gmt_offset + minutes_offset * 60; //Configure the GMT offset based on the time difference configured
-  Serial.print("Total gmt offset = ");
-  Serial.println(gmt_offset);
-  timeClient.setTimeOffset(gmt_offset);
-  timeClient.begin();
-  timeClient.update();
+  Serial.print("Configuring timezone with continent: ");
+  Serial.print(continent);
+  Serial.print(" and city: ");
+  Serial.println(city);
+
+  String location_str = continent + "/" + city;
+  timeClient.setLocation(location_str);
+  waitForSync();
+  Serial.println("Local time: " + timeClient.dateTime());
+
   return true;
 }

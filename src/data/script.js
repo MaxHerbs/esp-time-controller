@@ -150,10 +150,8 @@ function update_timezone() {
         return
     }
 
-    console.log(selected_value);
-    console.log(hour);
-    console.log(minutes);
-
+    console.log(continent);
+    console.log(city);
 
 
 
