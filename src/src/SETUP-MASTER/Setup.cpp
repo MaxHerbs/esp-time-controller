@@ -12,7 +12,7 @@ IPAddress gateway(192, 168, 0, 1);
 IPAddress subnet(255, 255, 255, 0);
 
 const char *ssid = "ESP-AP";
-const char *password = "Password123";
+const char *password = "Password123!";
 
 bool configure()
 {
@@ -96,21 +96,21 @@ bool configure()
             {
     Serial.println("Routing on set_timezone_details");
 
-    int hours = request->getParam("hours")->value().toInt();
-    int minutes = request->getParam("minutes")->value().toInt();
-
-    if (hours > 12 || hours < -12) {
-      request->send(400, "text/plain", "Failure: Missing parameters");
-      return;
-    }
-    if (minutes < 0 || minutes > 60) {
+    if (!(request->hasParam("continent") && request->hasParam("city")))
+    {
       request->send(400, "text/plain", "Failure: Missing parameters");
       return;
     }
 
-    bool success = set_timezone_details(hours, minutes);
+    String continent = request->getParam("continent")->value();
+    String city = request->getParam("city")->value();
+    
+
+    bool success = set_timezone_details(continent, city);
     String response = success ? "Success" : "Failure";
     request->send(200, "text/plain", response); });
+
+
 
   server.on("/get_timezone_details", HTTP_GET, [](AsyncWebServerRequest *request)
             {

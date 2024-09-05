@@ -114,7 +114,7 @@ bool verify_wifi_credentials(String ssid, String password)
 //
 //
 /// TIMEZONE ///
-bool set_timezone_details(int hours, int minutes)
+bool set_timezone_details(String continent, String city)
 {
     File input_file = SPIFFS.open("/credentials.txt", "r");
 
@@ -127,6 +127,8 @@ bool set_timezone_details(int hours, int minutes)
     String text = input_file.readString();
     input_file.close();
 
+
+    Serial.println("Deserialising json to replace timezone credentials...");
     StaticJsonDocument<512> doc;
     DeserializationError error = deserializeJson(doc, text);
     if (error)
@@ -135,9 +137,9 @@ bool set_timezone_details(int hours, int minutes)
         Serial.println(error.f_str());
         return false;
     }
-    Serial.println("Deserialising json to replace wifi credentials...");
-    doc["timezone"]["hours"] = hours;
-    doc["timezone"]["minutes"] = minutes;
+
+    doc["timezone"]["continent"] = continent;
+    doc["timezone"]["city"] = city;
     Serial.println("Timezone credentials replaced!");
 
     String output_json;
@@ -200,8 +202,8 @@ bool restore_config_file() {
     StaticJsonDocument<512> doc;
     doc["wifi"]["ssid"] = "temp";
     doc["wifi"]["password"] = "temp";
-    doc["timezone"]["hours"] = 1;
-    doc["timezone"]["minutes"] = 30;
+    doc["timezone"]["continent"] = "temp";
+    doc["timezone"]["city"] = "temp";
 
     // Serialize JSON to string
     String jsonString;

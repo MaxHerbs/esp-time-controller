@@ -6,7 +6,7 @@
 #include <Arduino.h>
 
 const char* ssid = "ESP-AP";
-const char* password = "Password123";
+const char* password = "Password123!";
 
 
 AsyncWebServer server(80);
