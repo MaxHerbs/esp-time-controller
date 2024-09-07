@@ -12,25 +12,6 @@ AsyncWebServer server(80);
 const char *ssid = "ESP-ACCESS-POINT";
 const char *password = "Password123!";
 
-// Taken from https://iotespresso.com/create-captive-portal-using-esp32/
-class CaptiveRequestHandler : public AsyncWebHandler
-{
-public:
-  CaptiveRequestHandler() {}
-  virtual ~CaptiveRequestHandler() {}
-
-  bool canHandle(AsyncWebServerRequest *request)
-  {
-    return true;
-  }
-
-  void handleRequest(AsyncWebServerRequest *request)
-  {
-    Serial.println("Handling request");
-    request->send(SPIFFS, "/index.html", "text/html");
-  }
-};
-
 bool configure(DNSServer& dnsServer)
 {
   // if (!WiFi.softAPConfig(local_IP, gateway, subnet))
@@ -63,10 +44,22 @@ bool configure(DNSServer& dnsServer)
     Serial.println("Routing on /");
     request->send(SPIFFS, "/index.html", "text/html"); });
 
-  server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest *request)
+  server.on("/general.js", HTTP_GET, [](AsyncWebServerRequest *request)
             {
-    Serial.println("Routing on /script.js");
-    request->send(SPIFFS, "/script.js", "text/javascript"); });
+    Serial.println("Routing on /general.js");
+    request->send(SPIFFS, "/general.js", "text/javascript"); });
+
+  server.on("/timezone.js", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+    Serial.println("Routing on /timezone.js");
+    request->send(SPIFFS, "/timezone.js", "text/javascript"); });
+
+  server.on("/wifi.js", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+    Serial.println("Routing on /wifi.js");
+    request->send(SPIFFS, "/wifi.js", "text/javascript"); });
+
+
 
   server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request)
             {
@@ -87,37 +80,42 @@ bool configure(DNSServer& dnsServer)
   //
   //
 
-  server.on("/set_wifi_credentials", HTTP_GET, [](AsyncWebServerRequest *request)
-            {
+server.on("/set_wifi_credentials", HTTP_GET, [](AsyncWebServerRequest *request) {
     Serial.println("Routing on set_wifi_credentials");
     if (!(request->hasParam("ssid") && request->hasParam("password"))) {
-      request->send(400, "text/plain", "Failure: Missing parameters");
-      return;
+        request->send(400, "text/plain", "Failure: Missing parameters");
+        return;
     }
     String input_ssid = request->getParam("ssid")->value();
     String password = request->getParam("password")->value();
     bool success = set_wifi_credentials(input_ssid, password);
     String response = success ? "Success" : "Failure";
-    request->send(200, "text/plain", response); });
+    request->send(200, "text/plain", response);
+});
 
-  server.on("/get_wifi_credentials", HTTP_GET, [](AsyncWebServerRequest *request)
-            {
+server.on("/get_wifi_credentials", HTTP_GET, [](AsyncWebServerRequest *request) {
     Serial.println("Routing on get_wifi_credentials");
     String credentials = get_wifi_credentials();
-    request->send(200, "text/plain", credentials); });
+    request->send(200, "text/plain", credentials);
+});
 
-  server.on("/verify_wifi_credentials", HTTP_GET, [](AsyncWebServerRequest *request)
-            {
-              if (!(request->hasParam("ssid") && request->hasParam("password")))
-              {
-                request->send(400, "text/plain", "Failure: Missing parameters");
-                return;
-              }
-              String input_ssid = request->getParam("ssid")->value();
-              String password = request->getParam("password")->value();
-              bool success = verify_wifi_credentials(input_ssid, password);
-              String response = success ? "Success" : "Failure";
-              request->send(200, "text/plain", response); });
+server.on("/verify_wifi_credentials", HTTP_GET, [](AsyncWebServerRequest *request) {
+    if (!(request->hasParam("ssid") && request->hasParam("password"))) {
+        request->send(400, "text/plain", "Failure: Missing parameters");
+        return;
+    }
+    String input_ssid = request->getParam("ssid")->value();
+    String password = request->getParam("password")->value();
+    bool success = verify_wifi_credentials(input_ssid, password);
+    String response = success ? "Success" : "Failure";
+    request->send(200, "text/plain", response);
+});
+
+server.on("/get_available_wifi", HTTP_GET, [](AsyncWebServerRequest *request) {
+    String available_ssid = get_available_wifi();
+    request->send(200, "text/plain", available_ssid);
+});
+
 
   //
   //

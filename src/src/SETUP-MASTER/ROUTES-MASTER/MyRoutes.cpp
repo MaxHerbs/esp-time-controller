@@ -8,8 +8,14 @@
 
 
 
-// TODO - Dual band; verify credentials before storing
-// Optional force-store even if wifi cannot be found
+
+
+
+bool array_contains(String* my_list, int length, String entry);
+
+
+
+
 bool set_wifi_credentials(String ssid, String password)
 {
     File input_file = SPIFFS.open("/credentials.txt", "r");
@@ -107,6 +113,54 @@ bool verify_wifi_credentials(String ssid, String password)
     Serial.println("Success");
     return true;
 }
+
+
+String get_available_wifi() {
+  int numNetworks = WiFi.scanNetworks();
+
+  String networks[numNetworks];
+  String return_str = "";
+
+
+  // Print the number of networks found
+  if (numNetworks == 0) {
+    Serial.println("No networks found.");
+  } else {
+    Serial.print(numNetworks);
+    Serial.println(" networks found:");
+
+
+    for (int i = 0; i < numNetworks; ++i) {
+      Serial.println(WiFi.SSID(i));    
+
+      if (!array_contains(networks, numNetworks, WiFi.SSID(i))) {
+        Serial.println("Appending: " + WiFi.SSID(i));
+        networks[i] = WiFi.SSID(i);
+      }
+    }
+
+    for (int i = 0; i < numNetworks; ++i) {
+      if (networks[i] != NULL){
+        return_str += networks[i];
+        return_str += "\n";
+      }
+    }
+
+  }
+  return return_str.substring(0, return_str.length() - 1);
+}
+
+bool array_contains(String* my_list, int length, String entry) {
+  for (int i = 0; i < length; i++) {
+    if (my_list[i] == entry) {
+      Serial.println("List already contains " + my_list[i]);
+      return true;
+    }
+  }
+  return false;
+}
+
+
 
 //
 //

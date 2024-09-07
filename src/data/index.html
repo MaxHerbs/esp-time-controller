@@ -6,6 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Basic HTML Template</title>
     <link rel="stylesheet" href="style.css">
+    <script src="script.js"></script>
+    <script src="general.js"></script>
+    <script src="wifi.js"></script>
+    <script src="timezone.js"></script>
     <!-- Link to an external CSS file (optional) -->
 </head>
 
@@ -18,7 +22,9 @@
         </div>
 
         <h2>WiFi Credentials</h2>
-        <input placeholder="WiFi name" type="text" id="ssid_input"><br>
+        <select id="ssid">
+            <option value="" disabled selected>Searching...</option>
+        </select><br>
         <input placeholder="Password" type="text" id="password_input"><br>
         <input type="submit" id="verifyWifi" onclick="verify_wifi()" value="Verify">
         <input type="submit" id="updateWifi" onclick="update_wifi()" value="Submit">
@@ -47,7 +53,7 @@
     </div>
 
 
-    <script src="script.js"></script>
+
 </body>
 
 </html>
