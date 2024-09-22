@@ -1,6 +1,7 @@
-#include <WiFi.h>
+#include <ESP8266WiFi.h>
+
 #include <ESPAsyncWebServer.h>
-#include <SPIFFS.h>
+
 #include <FS.h>
 #include "src/SETUP-MASTER/Setup.h" //SRC is a bad folder namebut neccessary for recursive compilation of the functions within each folder
 #include "src/SETUP-MASTER/ROUTES-MASTER/MyRoutes.h"
@@ -28,7 +29,7 @@ void setup()
   pinMode(button_pin, INPUT);
 
   // Check SPIFFS is okay. Code cannot function without
-  if (!SPIFFS.begin(true))
+  if (!SPIFFS.begin())
   {
     Serial.println("Failed to mount SPIFFS");
     return;
@@ -40,7 +41,7 @@ void setup()
   {
     Serial.println("Running setup...");
     bool success = configure(dnsServer); // External function. Contains all HTTP routes and starts access point
-   
+    get_available_wifi();
 
   }
   else

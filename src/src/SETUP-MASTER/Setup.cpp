@@ -1,8 +1,8 @@
 #include "Setup.h"
 #include <ArduinoJson.h>
-#include "SPIFFS.h"
 #include "ROUTES-MASTER/MyRoutes.h"
-#include <WiFi.h>
+#include <ESP8266WiFi.h>
+
 #include <ESPAsyncWebServer.h>
 #include <FS.h>
 #include <DNSServer.h>
@@ -19,6 +19,9 @@ bool configure(DNSServer& dnsServer)
   //   Serial.println("Failed to configure AP");
   // }
 
+
+  WiFi.mode(WIFI_AP_STA);
+  delay(100);
   if (!WiFi.softAP(ssid, password))
   {
     Serial.println("Failed to start AP");
@@ -44,20 +47,11 @@ bool configure(DNSServer& dnsServer)
     Serial.println("Routing on /");
     request->send(SPIFFS, "/index.html", "text/html"); });
 
-  server.on("/general.js", HTTP_GET, [](AsyncWebServerRequest *request)
+  server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest *request)
             {
-    Serial.println("Routing on /general.js");
-    request->send(SPIFFS, "/general.js", "text/javascript"); });
+    Serial.println("Routing on /script.js");
+    request->send(SPIFFS, "/script.js", "text/javascript"); });
 
-  server.on("/timezone.js", HTTP_GET, [](AsyncWebServerRequest *request)
-            {
-    Serial.println("Routing on /timezone.js");
-    request->send(SPIFFS, "/timezone.js", "text/javascript"); });
-
-  server.on("/wifi.js", HTTP_GET, [](AsyncWebServerRequest *request)
-            {
-    Serial.println("Routing on /wifi.js");
-    request->send(SPIFFS, "/wifi.js", "text/javascript"); });
 
 
 
@@ -67,7 +61,13 @@ bool configure(DNSServer& dnsServer)
     request->send(SPIFFS, "/style.css", "text/css"); });
     
   server.onNotFound([](AsyncWebServerRequest *request){
-    // Redirect to captive portal page
+    String requestedUrl = request->url();
+    Serial.println("Requested endpoint not found: " + requestedUrl);
+    if(requestedUrl == "/favicon.ico"){
+      request->send(404, "text/plain", "");
+      return;
+    }
+
     request->redirect("/");
   });
 
@@ -112,12 +112,10 @@ server.on("/verify_wifi_credentials", HTTP_GET, [](AsyncWebServerRequest *reques
 });
 
 server.on("/get_available_wifi", HTTP_GET, [](AsyncWebServerRequest *request) {
-    String available_ssid = get_available_wifi();
-    request->send(200, "text/plain", available_ssid);
+    request->send(200, "text/plain", defaultNetworks);
 });
 
 
-  //
   //
   //
   //

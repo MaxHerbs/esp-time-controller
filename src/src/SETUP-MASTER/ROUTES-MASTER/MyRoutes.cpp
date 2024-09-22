@@ -1,18 +1,12 @@
 #include "MyRoutes.h"
 #include <ArduinoJson.h>
 #include <Arduino.h>
-#include "SPIFFS.h"
-#include <WiFi.h>
-#include "esp_system.h"
-#include "esp_task_wdt.h"
-
-
+#include <ESP8266WiFi.h>
 
 
 
 
 bool array_contains(String* my_list, int length, String entry);
-
 
 
 
@@ -47,7 +41,7 @@ bool set_wifi_credentials(String ssid, String password)
     serializeJson(doc, output_json);
     Serial.println("Re-serialised JSON");
 
-    File output_file = SPIFFS.open("/credentials.txt", FILE_WRITE);
+    File output_file = SPIFFS.open("/credentials.txt", "w");
 
     if (!output_file)
     {
@@ -107,7 +101,7 @@ bool verify_wifi_credentials(String ssid, String password)
         }
         delay(10);
         yield();
-        esp_task_wdt_reset();
+        ESP.wdtFeed();
     }
 
     Serial.println("Success");
@@ -115,9 +109,13 @@ bool verify_wifi_credentials(String ssid, String password)
 }
 
 
-String get_available_wifi() {
-  int numNetworks = WiFi.scanNetworks();
 
+
+String defaultNetworks = "";
+void get_available_wifi() {
+  int numNetworks = WiFi.scanNetworks();
+  Serial.print(numNetworks);
+  Serial.println(" found");
   String networks[numNetworks];
   String return_str = "";
 
@@ -147,7 +145,7 @@ String get_available_wifi() {
     }
 
   }
-  return return_str.substring(0, return_str.length() - 1);
+  defaultNetworks = return_str.substring(0, return_str.length() - 1);
 }
 
 bool array_contains(String* my_list, int length, String entry) {
@@ -202,7 +200,7 @@ bool set_timezone_details(String continent, String city)
     serializeJson(doc, output_json);
     Serial.println("Re-serialised JSON");
 
-    File output_file = SPIFFS.open("/credentials.txt", FILE_WRITE);
+    File output_file = SPIFFS.open("/credentials.txt", "w");
 
     if (!output_file)
     {
@@ -247,7 +245,7 @@ String get_timezone_details()
 
 bool restore_config_file() {
     // Open file for writing
-    File restore_file = SPIFFS.open("/credentials.txt", FILE_WRITE);
+    File restore_file = SPIFFS.open("/credentials.txt", "w");
     
     if (!restore_file) {
         Serial.println("Failed to open credentials for writing #501");
