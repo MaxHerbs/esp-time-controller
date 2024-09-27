@@ -12,6 +12,8 @@ AsyncWebServer server(80);
 const char *ssid = "ESP-ACCESS-POINT";
 const char *password = "Password123!";
 
+
+
 bool configure(DNSServer& dnsServer)
 {
   // if (!WiFi.softAPConfig(local_IP, gateway, subnet))
@@ -103,13 +105,47 @@ server.on("/verify_wifi_credentials", HTTP_GET, [](AsyncWebServerRequest *reques
     if (!(request->hasParam("ssid") && request->hasParam("password"))) {
         request->send(400, "text/plain", "Failure: Missing parameters");
         return;
-    }
+    }  
     String input_ssid = request->getParam("ssid")->value();
     String password = request->getParam("password")->value();
+    if(input_ssid.length() < 2 || password.length() < 2){
+      request->send(400, "text/plain", "Failure: SSID or passoword too short");
+      return;
+    }
     bool success = verify_wifi_credentials(input_ssid, password);
     String response = success ? "Success" : "Failure";
     request->send(200, "text/plain", response);
 });
+
+server.on("/check_wifi_verification", HTTP_GET, [](AsyncWebServerRequest *request) {
+  Serial.println("Checking wifi verification");
+
+  StaticJsonDocument<512> doc;
+  doc["validationState"] = startValidation;
+  doc["ssid"] = testSsid;
+  doc["password"] = testPassword;
+  doc["status"] = searchComplete;
+
+    // Serialize JSON to string
+  String jsonString;
+  serializeJson(doc, jsonString);
+
+
+  Serial.print("Start validation ");
+  Serial.println(startValidation);
+  Serial.print("testSsid ");
+  Serial.println(testSsid);
+  Serial.print("testPassword ");
+  Serial.println(testPassword);
+  Serial.println("Search complete ");
+  Serial.println(searchComplete);
+
+  request->send(200, "application/json", jsonString);
+
+});
+
+
+
 
 server.on("/get_available_wifi", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(200, "text/plain", defaultNetworks);

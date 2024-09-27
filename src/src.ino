@@ -1,3 +1,9 @@
+//TODO:
+// 1) Manual rescan wifi
+// 2) Improve stability of `verify wifi` 
+// 3) Fix continent drop down
+// 4) Improve ui feedback/stability
+
 #include <ESP8266WiFi.h>
 
 #include <ESPAsyncWebServer.h>
@@ -16,9 +22,8 @@
 
 Timezone timeClient;
 DNSServer dnsServer;
-
-//TODO - Decide on real pin
-int button_pin = 39; //TBC - Correct for esp32 ATOM LITE
+pin
+int button_pin = 0; 
 bool run_setup;
 int last_millis = 0;
 int update_interval = 10000; //Frequency at which serial prints GPS time message
@@ -34,8 +39,16 @@ void setup()
     Serial.println("Failed to mount SPIFFS");
     return;
   }
+  Serial.println("");
+  Serial.println("Waiting for decision...");
+  delay(5000);
+
 
   run_setup = !digitalRead(button_pin); //'Not' due to pin setup in testing
+
+  String decision = run_setup ? "Config Mode" : "Printing NMEA";
+  Serial.print("Decision: ");
+  Serial.println(decision);
 
   if (run_setup)
   {
@@ -58,6 +71,9 @@ void loop()
   if (run_setup)
   {
     dnsServer.processNextRequest();
+    if (startValidation) {
+      validate_wifi();
+    }
   }
   else
   {
@@ -79,6 +95,48 @@ void loop()
   }
 }
 
+
+
+
+void validate_wifi() {
+  //extern int startValidation;
+  //extern String testSsid;
+  //extern String testPassword;
+  //extern int searchComplete;
+
+  searchComplete = 1;
+
+  unsigned long startAttemptTime = millis();
+  const unsigned long timeout = 15000;
+  Serial.print("Trying to verify wifi...");
+  WiFi.begin(testSsid.c_str(), testPassword.c_str());
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    Serial.print(".");
+    if (millis() - startAttemptTime >= timeout)
+    {
+      Serial.println("Failed");
+      searchComplete = 3;
+      testSsid = "";
+      testPassword = "";
+      startValidation = 0;
+      return;
+    }
+    delay(100);
+    yield();
+  }
+
+  searchComplete = 2;
+  testSsid = "";
+  testPassword = "";
+  startValidation = 0;
+  WiFi.disconnect();
+  Serial.println("Success");
+  return;
+
+
+
+}
 
 
 
@@ -118,6 +176,7 @@ void connect_to_wifi()
   }
   Serial.println("Connected");
 }
+
 
 bool configure_time_client()
 {

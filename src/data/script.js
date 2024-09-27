@@ -160,7 +160,7 @@ function verify_wifi() {
     url = `/verify_wifi_credentials?ssid=${ssid}&password=${password}`;
     console.log(url);
 
-
+    
 
     document.getElementById("wifiResponse").innerHTML = "Attempting to verify credentials...";
     fetch(url)
@@ -177,15 +177,7 @@ function verify_wifi() {
             // Handle the parsed data
             console.log(response);
 
-            if (response == "Success") {
-                document.getElementById("wifiResponse").innerHTML = "Wifi credentials verified!";
-            }
-            if (response == "Failure") {
-                document.getElementById("wifiResponse").innerHTML = "Failed to validate wifi credentials";
-            }
-            else {
-                error("Somethign went wrong while verifying credentials.");
-            }
+            watch_status()
 
 
         })
@@ -196,6 +188,51 @@ function verify_wifi() {
 
 
 }
+
+
+
+function watch_status(){
+    url = `/check_wifi_verification`;
+    
+        fetch(url)
+        .then(response => {
+            // Check if the response is successful (status code 200-299)
+            if (!response.ok) {
+                
+                throw new Error('Network response was not ok');
+            }
+            // Parse the response body as JSON
+            return response.json();
+        })
+        .then(response => {
+            // Handle the parsed data
+            console.log(response);
+            let status = response["status"];
+            if(status == 0){
+                document.getElementById("wifiResponse").innerHTML = "Verification failed to trigger";
+            }
+            if(status == 1){
+                document.getElementById("wifiResponse").innerHTML = "Trying to connect...";
+                setTimeout(watch_status, 1000);
+            }
+            if(status == 2){
+                document.getElementById("wifiResponse").innerHTML = "Connection successful!";
+            }
+            if(status == 3){
+                document.getElementById("wifiResponse").innerHTML = "Could not verify credentials. Credentials may be correct.";
+            }
+
+
+        })
+        .catch(error => {
+            // Handle any errors that occurred during the fetch
+            console.error('There has been a problem with your fetch operation:', error);
+        });
+
+
+
+}
+
 
 
 

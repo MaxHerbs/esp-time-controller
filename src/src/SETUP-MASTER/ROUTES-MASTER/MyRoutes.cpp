@@ -9,6 +9,10 @@
 bool array_contains(String* my_list, int length, String entry);
 
 
+int startValidation = 0;
+String testSsid;
+String testPassword;
+int searchComplete;
 
 bool set_wifi_credentials(String ssid, String password)
 {
@@ -86,26 +90,18 @@ String get_wifi_credentials()
 
 bool verify_wifi_credentials(String ssid, String password)
 {
-
-    unsigned long startAttemptTime = millis();
-    const unsigned long timeout = 10000;
-    Serial.print("Trying to verify wifi...");
-    WiFi.begin(ssid.c_str(), password.c_str());
-    while (WiFi.status() != WL_CONNECTED)
-    {
-        Serial.print(".");
-        if (millis() - startAttemptTime >= timeout)
-        {
-            Serial.println("Failed");
-            return false;
-        }
-        delay(10);
-        yield();
-        ESP.wdtFeed();
+    Serial.println("Configuring wifi validation");
+    if (startValidation){
+        Serial.println("Validation already ongoing");
+        return false;
     }
-
-    Serial.println("Success");
+    startValidation = 1;
+    testSsid = ssid;
+    testPassword = password;
+    searchComplete = 0;
     return true;
+  
+
 }
 
 
