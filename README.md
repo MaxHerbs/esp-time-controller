@@ -7,7 +7,7 @@ The module is designed such that a standard esp8266 can be used in place - at th
 
 The module      |	  Early UI
 :-------------------------:|:-------------------------:
-![Alt text](https://raw.githubusercontent.com/MaxHerbs/esp-time-controller/refs/heads/main/docs/images/esp-and-pcb.jpeg "PCB and ESP") |  ![Alt text](https://raw.githubusercontent.com/MaxHerbs/esp-time-controller/refs/heads/main/docs/images/early-ui.png"PCB and ESP")
+![Alt text](https://raw.githubusercontent.com/MaxHerbs/esp-time-controller/refs/heads/main/docs/images/esp-and-pcb.jpeg "PCB and ESP") |  ![Alt text](https://raw.githubusercontent.com/MaxHerbs/esp-time-controller/refs/heads/main/docs/images/early-ui.png "PCB and ESP")
 
 
 
