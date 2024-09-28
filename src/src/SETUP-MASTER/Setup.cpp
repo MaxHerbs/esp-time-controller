@@ -1,8 +1,8 @@
 #include "Setup.h"
 #include <ArduinoJson.h>
-#include "SPIFFS.h"
 #include "ROUTES-MASTER/MyRoutes.h"
-#include <WiFi.h>
+#include <ESP8266WiFi.h>
+
 #include <ESPAsyncWebServer.h>
 #include <FS.h>
 #include <DNSServer.h>
@@ -12,6 +12,8 @@ AsyncWebServer server(80);
 const char *ssid = "ESP-ACCESS-POINT";
 const char *password = "Password123!";
 
+
+
 bool configure(DNSServer& dnsServer)
 {
   // if (!WiFi.softAPConfig(local_IP, gateway, subnet))
@@ -19,6 +21,9 @@ bool configure(DNSServer& dnsServer)
   //   Serial.println("Failed to configure AP");
   // }
 
+
+  WiFi.mode(WIFI_AP_STA);
+  delay(100);
   if (!WiFi.softAP(ssid, password))
   {
     Serial.println("Failed to start AP");
@@ -44,20 +49,11 @@ bool configure(DNSServer& dnsServer)
     Serial.println("Routing on /");
     request->send(SPIFFS, "/index.html", "text/html"); });
 
-  server.on("/general.js", HTTP_GET, [](AsyncWebServerRequest *request)
+  server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest *request)
             {
-    Serial.println("Routing on /general.js");
-    request->send(SPIFFS, "/general.js", "text/javascript"); });
+    Serial.println("Routing on /script.js");
+    request->send(SPIFFS, "/script.js", "text/javascript"); });
 
-  server.on("/timezone.js", HTTP_GET, [](AsyncWebServerRequest *request)
-            {
-    Serial.println("Routing on /timezone.js");
-    request->send(SPIFFS, "/timezone.js", "text/javascript"); });
-
-  server.on("/wifi.js", HTTP_GET, [](AsyncWebServerRequest *request)
-            {
-    Serial.println("Routing on /wifi.js");
-    request->send(SPIFFS, "/wifi.js", "text/javascript"); });
 
 
 
@@ -67,7 +63,13 @@ bool configure(DNSServer& dnsServer)
     request->send(SPIFFS, "/style.css", "text/css"); });
     
   server.onNotFound([](AsyncWebServerRequest *request){
-    // Redirect to captive portal page
+    String requestedUrl = request->url();
+    Serial.println("Requested endpoint not found: " + requestedUrl);
+    if(requestedUrl == "/favicon.ico"){
+      request->send(404, "text/plain", "");
+      return;
+    }
+
     request->redirect("/");
   });
 
@@ -103,21 +105,60 @@ server.on("/verify_wifi_credentials", HTTP_GET, [](AsyncWebServerRequest *reques
     if (!(request->hasParam("ssid") && request->hasParam("password"))) {
         request->send(400, "text/plain", "Failure: Missing parameters");
         return;
-    }
+    }  
     String input_ssid = request->getParam("ssid")->value();
     String password = request->getParam("password")->value();
+    if(input_ssid.length() < 2 || password.length() < 2){
+      request->send(400, "text/plain", "Failure: SSID or passoword too short");
+      return;
+    }
     bool success = verify_wifi_credentials(input_ssid, password);
     String response = success ? "Success" : "Failure";
     request->send(200, "text/plain", response);
 });
 
-server.on("/get_available_wifi", HTTP_GET, [](AsyncWebServerRequest *request) {
-    String available_ssid = get_available_wifi();
-    request->send(200, "text/plain", available_ssid);
+server.on("/check_wifi_verification", HTTP_GET, [](AsyncWebServerRequest *request) {
+  Serial.println("Checking wifi verification");
+
+  StaticJsonDocument<512> doc;
+  doc["validationState"] = flagStartValidation;
+  doc["ssid"] = testSsid;
+  doc["password"] = testPassword;
+  doc["status"] = searchComplete;
+
+    // Serialize JSON to string
+  String jsonString;
+  serializeJson(doc, jsonString);
+
+
+  Serial.print("Start validation ");
+  Serial.println(flagStartValidation);
+  Serial.print("testSsid ");
+  Serial.println(testSsid);
+  Serial.print("testPassword ");
+  Serial.println(testPassword);
+  Serial.println("Search complete ");
+  Serial.println(searchComplete);
+
+  request->send(200, "application/json", jsonString);
+
 });
 
 
-  //
+
+
+server.on("/get_available_wifi", HTTP_GET, [](AsyncWebServerRequest *request) {
+    if ((request->hasParam("rescan")))
+    {
+      if(request->getParam("rescan")->value() == "1"){
+        flagRescanWifi = 1;
+      }
+    }
+
+    request->send(200, "text/plain", defaultNetworks);
+});
+
+
   //
   //
   //

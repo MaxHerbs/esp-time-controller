@@ -7,13 +7,9 @@
     <title>Basic HTML Template</title>
     <link rel="stylesheet" href="style.css">
     <script src="script.js"></script>
-    <script src="general.js"></script>
-    <script src="wifi.js"></script>
-    <script src="timezone.js"></script>
-    <!-- Link to an external CSS file (optional) -->
 </head>
 
-<body onload="on_load()">
+<body>
 
     <div class="container">
 
@@ -28,6 +24,7 @@
         <input placeholder="Password" type="text" id="password_input"><br>
         <input type="submit" id="verifyWifi" onclick="verify_wifi()" value="Verify">
         <input type="submit" id="updateWifi" onclick="update_wifi()" value="Submit">
+        <input type="submit" id="rescan" onclick="get_available_wifi(1)" value="Rescan">
         <h4 id="wifiResponse"></h4>
 
         <br>
@@ -36,7 +33,7 @@
         <select id="continent">
             <option value="" disabled selected>Continents</option>
         </select><br>
-    
+
         <label for="city">Select City:</label>
         <select id="city">
             <option value="" disabled selected>Select a continent first</option>

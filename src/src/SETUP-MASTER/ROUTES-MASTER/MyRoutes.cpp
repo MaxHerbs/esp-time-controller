@@ -1,12 +1,7 @@
 #include "MyRoutes.h"
 #include <ArduinoJson.h>
 #include <Arduino.h>
-#include "SPIFFS.h"
-#include <WiFi.h>
-#include "esp_system.h"
-#include "esp_task_wdt.h"
-
-
+#include <ESP8266WiFi.h>
 
 
 
@@ -14,7 +9,12 @@
 bool array_contains(String* my_list, int length, String entry);
 
 
+int flagStartValidation = 0;
+String testSsid;
+String testPassword;
+int searchComplete;
 
+int flagRescanWifi = 0;
 
 bool set_wifi_credentials(String ssid, String password)
 {
@@ -47,7 +47,7 @@ bool set_wifi_credentials(String ssid, String password)
     serializeJson(doc, output_json);
     Serial.println("Re-serialised JSON");
 
-    File output_file = SPIFFS.open("/credentials.txt", FILE_WRITE);
+    File output_file = SPIFFS.open("/credentials.txt", "w");
 
     if (!output_file)
     {
@@ -92,32 +92,28 @@ String get_wifi_credentials()
 
 bool verify_wifi_credentials(String ssid, String password)
 {
-
-    unsigned long startAttemptTime = millis();
-    const unsigned long timeout = 10000;
-    Serial.print("Trying to verify wifi...");
-    WiFi.begin(ssid.c_str(), password.c_str());
-    while (WiFi.status() != WL_CONNECTED)
-    {
-        Serial.print(".");
-        if (millis() - startAttemptTime >= timeout)
-        {
-            Serial.println("Failed");
-            return false;
-        }
-        delay(10);
-        yield();
-        esp_task_wdt_reset();
+    Serial.println("Configuring wifi validation");
+    if (flagStartValidation){
+        Serial.println("Validation already ongoing");
+        return false;
     }
-
-    Serial.println("Success");
+    flagStartValidation = 1;
+    testSsid = ssid;
+    testPassword = password;
+    searchComplete = 0;
     return true;
+  
+
 }
 
 
-String get_available_wifi() {
-  int numNetworks = WiFi.scanNetworks();
 
+
+String defaultNetworks = "";
+void get_available_wifi() {
+  int numNetworks = WiFi.scanNetworks();
+  Serial.print(numNetworks);
+  Serial.println(" found");
   String networks[numNetworks];
   String return_str = "";
 
@@ -147,7 +143,8 @@ String get_available_wifi() {
     }
 
   }
-  return return_str.substring(0, return_str.length() - 1);
+  flagRescanWifi = 0;
+  defaultNetworks = return_str.substring(0, return_str.length() - 1);
 }
 
 bool array_contains(String* my_list, int length, String entry) {
@@ -202,7 +199,7 @@ bool set_timezone_details(String continent, String city)
     serializeJson(doc, output_json);
     Serial.println("Re-serialised JSON");
 
-    File output_file = SPIFFS.open("/credentials.txt", FILE_WRITE);
+    File output_file = SPIFFS.open("/credentials.txt", "w");
 
     if (!output_file)
     {
@@ -247,7 +244,7 @@ String get_timezone_details()
 
 bool restore_config_file() {
     // Open file for writing
-    File restore_file = SPIFFS.open("/credentials.txt", FILE_WRITE);
+    File restore_file = SPIFFS.open("/credentials.txt", "w");
     
     if (!restore_file) {
         Serial.println("Failed to open credentials for writing #501");
