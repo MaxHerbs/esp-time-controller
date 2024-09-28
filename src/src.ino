@@ -22,7 +22,7 @@
 
 Timezone timeClient;
 DNSServer dnsServer;
-pin
+
 int button_pin = 0; 
 bool run_setup;
 int last_millis = 0;
@@ -71,10 +71,19 @@ void loop()
   if (run_setup)
   {
     dnsServer.processNextRequest();
-    if (startValidation) {
+    if (flagStartValidation) {
       validate_wifi();
     }
+
+    if (flagRescanWifi){
+       get_available_wifi();
+    }
+    
   }
+
+
+
+  
   else
   {
     //Reconnect wifi if necessary
@@ -98,19 +107,27 @@ void loop()
 
 
 
+
+
+
+unsigned long startAttemptTime = 0;
+const unsigned long timeout = 15000;
 void validate_wifi() {
-  //extern int startValidation;
+  //extern int flagStartValidation;
   //extern String testSsid;
   //extern String testPassword;
   //extern int searchComplete;
 
-  searchComplete = 1;
+  if(flagStartValidation == 1 && searchComplete == 0){
+    startAttemptTime = millis();
+    searchComplete = 1; 
+    Serial.print("Trying to verify wifi...");
+    WiFi.begin(testSsid.c_str(), testPassword.c_str());
+  }
 
-  unsigned long startAttemptTime = millis();
-  const unsigned long timeout = 15000;
-  Serial.print("Trying to verify wifi...");
-  WiFi.begin(testSsid.c_str(), testPassword.c_str());
-  while (WiFi.status() != WL_CONNECTED)
+
+
+  if (WiFi.status() != WL_CONNECTED)
   {
     Serial.print(".");
     if (millis() - startAttemptTime >= timeout)
@@ -119,22 +136,21 @@ void validate_wifi() {
       searchComplete = 3;
       testSsid = "";
       testPassword = "";
-      startValidation = 0;
+      flagStartValidation = 0;
       return;
     }
-    delay(100);
-    yield();
+  }else{
+    searchComplete = 2;
+    testSsid = "";
+    testPassword = "";
+    flagStartValidation = 0;
+    WiFi.disconnect();
+    Serial.println("Success");
+    return;
   }
+  
 
-  searchComplete = 2;
-  testSsid = "";
-  testPassword = "";
-  startValidation = 0;
-  WiFi.disconnect();
-  Serial.println("Success");
   return;
-
-
 
 }
 

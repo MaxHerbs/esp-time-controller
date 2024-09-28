@@ -121,7 +121,7 @@ server.on("/check_wifi_verification", HTTP_GET, [](AsyncWebServerRequest *reques
   Serial.println("Checking wifi verification");
 
   StaticJsonDocument<512> doc;
-  doc["validationState"] = startValidation;
+  doc["validationState"] = flagStartValidation;
   doc["ssid"] = testSsid;
   doc["password"] = testPassword;
   doc["status"] = searchComplete;
@@ -132,7 +132,7 @@ server.on("/check_wifi_verification", HTTP_GET, [](AsyncWebServerRequest *reques
 
 
   Serial.print("Start validation ");
-  Serial.println(startValidation);
+  Serial.println(flagStartValidation);
   Serial.print("testSsid ");
   Serial.println(testSsid);
   Serial.print("testPassword ");
@@ -148,6 +148,13 @@ server.on("/check_wifi_verification", HTTP_GET, [](AsyncWebServerRequest *reques
 
 
 server.on("/get_available_wifi", HTTP_GET, [](AsyncWebServerRequest *request) {
+    if ((request->hasParam("rescan")))
+    {
+      if(request->getParam("rescan")->value() == "1"){
+        flagRescanWifi = 1;
+      }
+    }
+
     request->send(200, "text/plain", defaultNetworks);
 });
 

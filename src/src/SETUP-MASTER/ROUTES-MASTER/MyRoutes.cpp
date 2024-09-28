@@ -9,10 +9,12 @@
 bool array_contains(String* my_list, int length, String entry);
 
 
-int startValidation = 0;
+int flagStartValidation = 0;
 String testSsid;
 String testPassword;
 int searchComplete;
+
+int flagRescanWifi = 0;
 
 bool set_wifi_credentials(String ssid, String password)
 {
@@ -91,11 +93,11 @@ String get_wifi_credentials()
 bool verify_wifi_credentials(String ssid, String password)
 {
     Serial.println("Configuring wifi validation");
-    if (startValidation){
+    if (flagStartValidation){
         Serial.println("Validation already ongoing");
         return false;
     }
-    startValidation = 1;
+    flagStartValidation = 1;
     testSsid = ssid;
     testPassword = password;
     searchComplete = 0;
@@ -141,6 +143,7 @@ void get_available_wifi() {
     }
 
   }
+  flagRescanWifi = 0;
   defaultNetworks = return_str.substring(0, return_str.length() - 1);
 }
 

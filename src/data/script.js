@@ -41,7 +41,7 @@ function on_load(){
         }
     });
 
-    get_available_wifi();
+    get_available_wifi(0);
 }
 
 
@@ -238,8 +238,12 @@ function watch_status(){
 
 let max_retries = 5;
 let retry_num = 0;
-function get_available_wifi() {
+let prev_response = "";
+function get_available_wifi(rescan) {
     url = `/get_available_wifi`;
+    if(rescan){
+        url += "?rescan=1"
+    }
     console.log(url);
     const ssid_select = document.getElementById("ssid");
     while (ssid_select.options.length > 0) {
@@ -269,7 +273,8 @@ function get_available_wifi() {
                 ssid_select.remove(0);
             }
 
-            if (response === "") {
+            if (response === "" || response == prev_response) {
+                
                 let defaultOption = document.createElement("option");
                 defaultOption.value = "";
                 defaultOption.disabled = true;
@@ -279,16 +284,24 @@ function get_available_wifi() {
                 if (retry_num <= max_retries){
                     defaultOption.textContent = "Searching...";
                     ssid_select.appendChild(defaultOption);
-                    setTimeout(get_available_wifi, 10000); // Retry after 10 seconds
+                    console.log("Queuing get_available");
+                    setTimeout(get_available_wifi(1), 10000); // Retry after 10 seconds
+                    return;
+                    
                 }
                 else{
-                    defaultOption.textContent = "No networks found";
-                    ssid_select.appendChild(defaultOption);
-                }
+                    if (response == ""){                    
+                        defaultOption.textContent = "No networks found";
+                        ssid_select.appendChild(defaultOption);
+                        return;
 
-                return;
+                    }else{
+                        console.log("Hit this else");
+                    }
+                }
             }
 
+            prev_response = response;
             const ssid_list = response.split("\n");
 
 
