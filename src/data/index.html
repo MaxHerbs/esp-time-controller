@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Basic HTML Template</title>
+    <title>Clock Configuration</title>
     <link rel="stylesheet" href="style.css">
     <script src="script.js"></script>
 </head>
@@ -18,38 +18,34 @@
         </div>
 
         <h2>WiFi Credentials</h2>
+        <label for="ssid">Select SSID:</label>
         <select id="ssid">
             <option value="" disabled selected>Searching...</option>
-        </select><br>
-        <input placeholder="Password" type="text" id="password_input"><br>
-        <input type="submit" id="verifyWifi" onclick="verify_wifi()" value="Verify">
-        <input type="submit" id="updateWifi" onclick="update_wifi()" value="Submit">
-        <input type="submit" id="rescan" onclick="get_available_wifi(1)" value="Rescan">
+        </select>
+        <label for="password_input">Password:</label>
+        <input placeholder="Password" type="text" id="password_input">
+        <div style="display: flex; gap: 10px;">
+            <input type="submit" id="verifyWifi" onclick="verify_wifi()" value="Verify">
+            <input type="submit" id="updateWifi" onclick="update_wifi()" value="Submit">
+            <input type="submit" id="rescan" onclick="get_available_wifi(1)" value="Rescan">
+        </div>
         <h4 id="wifiResponse"></h4>
 
-        <br>
         <h2>Time Zone</h2>
-        <label for="city">Select City:</label>
+        <label for="continent">Select Continent:</label>
         <select id="continent">
             <option value="" disabled selected>Continents</option>
-        </select><br>
-
+        </select>
         <label for="city">Select City:</label>
         <select id="city">
             <option value="" disabled selected>Select a continent first</option>
-        </select><br>
-        <input type="submit" id="updateTimezone" onclick="update_timezone()">
+        </select>
+        <input type="submit" id="updateTimezone" onclick="update_timezone()" value="Update Timezone">
         <h4 id="timezoneResponse"></h4>
 
-
-
-
-    </div>
-    <div class="container">
         <input type="submit" id="reboot" onclick="reboot()" value="Reboot">
+
     </div>
-
-
 
 </body>
 
