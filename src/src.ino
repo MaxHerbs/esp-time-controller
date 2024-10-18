@@ -30,7 +30,7 @@ int update_interval = 10000; //Frequency at which serial prints GPS time message
 
 void setup()
 {
-  Serial.begin(115200);
+  Serial.begin(9600);
   pinMode(button_pin, INPUT);
 
   // Check SPIFFS is okay. Code cannot function without
